@@ -81,4 +81,3 @@ class Category:
                 f"{product.name}, {price_out} руб. Остаток: {product.quantity} шт.\n"
             )
         return "".join(lines)
-
