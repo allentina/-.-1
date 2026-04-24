@@ -1,12 +1,41 @@
 # Intro OOP Homework
 
-Implemented basic domain models:
+Небольшой учебный проект с базовыми доменными моделями:
 
-- `Product` with fields `name`, `description`, `price`, `quantity`.
-- `Category` with fields `name`, `description`, `products`.
-- `Category.category_count` and `Category.product_count` are updated automatically on category initialization.
-- JSON loader `load_categories_from_json()` creates objects from `products.json`.
-- `Category` stores products in a private list and provides `add_product()` and a `products` getter for formatted output.
-- `Product.price` is protected by a getter/setter, and `Product.new_product()` builds a product from a dict.
+- `Product` с полями `name`, `description`, `price`, `quantity`.
+- `Category` с полями `name`, `description`, `products`.
+- Счетчики `Category.category_count` и `Category.product_count` обновляются автоматически при создании объектов и добавлении продуктов.
+- JSON-загрузчик `load_categories_from_json()` создает объекты из `products.json`.
+- `Category` хранит продукты в приватном списке и предоставляет `add_product()` и свойство `products` (форматированный вывод).
+- `Product.price` защищен через getter/setter, а `Product.new_product()` создает продукт из `dict`.
 
-Tests are written with `pytest` and coverage is generated to `coverage.xml`.
+## Зависимости
+
+- Python `>= 3.12`
+- Dev-зависимости: `pytest`, `pytest-cov`, `flake8` (см. `pyproject.toml` или `requirements-dev.txt`)
+
+## Установка (venv + pip, Windows PowerShell)
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\pip install -r requirements-dev.txt
+```
+
+## Установка (Poetry, опционально)
+
+```powershell
+poetry install
+```
+
+## Тесты и покрытие
+
+Запуск тестов (покрытие генерируется настройками в `pyproject.toml`):
+
+```powershell
+.\.venv\Scripts\python -m pytest
+```
+
+Артефакты покрытия:
+
+- `coverage.xml` (XML-отчет)
+- `coverage_report.txt` (краткий текстовый отчет)

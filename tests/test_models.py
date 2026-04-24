@@ -95,7 +95,6 @@ def test_price_setter_rejects_non_positive(capsys):
     captured = capsys.readouterr()
     assert "Цена не должна быть нулевая или отрицательная" in captured.out
     assert product.price == pytest.approx(100.0)
-
     product.price = -10
     captured = capsys.readouterr()
     assert "Цена не должна быть нулевая или отрицательная" in captured.out

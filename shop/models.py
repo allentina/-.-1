@@ -54,6 +54,7 @@ class Category:
         self.description = description
         self.__products: list[Product] = []
 
+        # Class-level counters should update automatically on object creation.
         type(self).category_count += 1
 
         if products is not None:
