@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "intro-oop-homework"
+version = "0.1.0"
+description = "Homework: Product and Category models with counters and tests"
+authors = ["Student <student@example.com>"]
+readme = "README.md"
+packages = [{ include = "shop" }]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.0"
+pytest-cov = "^7.0.0"
+flake8 = "^7.0.0"
+
+[tool.pytest.ini_options]
+addopts = "--cov=shop --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=75"
+testpaths = ["tests"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
