@@ -24,7 +24,7 @@ def main() -> None:
     )
 
     print(category.name)
-    print(f"Products: {len(category.products)}")
+    print(category.products, end="")
     print(f"Category count: {Category.category_count}")
     print(f"Product count: {Category.product_count}")
 

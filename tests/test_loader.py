@@ -40,8 +40,8 @@ def test_load_categories_from_json(tmp_path):
     assert isinstance(category, Category)
     assert category.name == "C1"
     assert category.description == "D1"
-    assert len(category.products) == 2
-    assert all(isinstance(p, Product) for p in category.products)
+    assert len(category._Category__products) == 2
+    assert all(isinstance(p, Product) for p in category._Category__products)
     assert Category.category_count == 1
     assert Category.product_count == 2
 
