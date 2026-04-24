@@ -54,6 +54,7 @@ class Category:
         self.description = description
         self.__products: list[Product] = []
 
+        # Class-level counters should update automatically on object creation.
         type(self).category_count += 1
 
         if products is not None:
@@ -80,3 +81,4 @@ class Category:
                 f"{product.name}, {price_out} руб. Остаток: {product.quantity} шт.\n"
             )
         return "".join(lines)
+
