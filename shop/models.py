@@ -59,8 +59,14 @@ class Category:
         Category.category_count += 1
 
         if products is not None:
-            for product in products:
-                self.add_product(product)
+            # Materialize once (in case an iterator is passed) and validate types.
+            products_list = list(products)
+            for product in products_list:
+                if not isinstance(product, Product):
+                    raise TypeError("product must be a Product instance")
+
+            self.__products.extend(products_list)
+            Category.product_count += len(products_list)
 
     def add_product(self, product: Product) -> None:
         if not isinstance(product, Product):
