@@ -55,7 +55,8 @@ class Category:
         self.__products: list[Product] = []
 
         # Class-level counters should update automatically on object creation.
-        type(self).category_count += 1
+        # Keep a single global counter across all Category instances (incl. subclasses).
+        Category.category_count += 1
 
         if products is not None:
             for product in products:
@@ -66,7 +67,8 @@ class Category:
             raise TypeError("product must be a Product instance")
 
         self.__products.append(product)
-        type(self).product_count += 1
+        # Total products across all categories should be stored on the base class.
+        Category.product_count += 1
 
     @property
     def products(self) -> str:
