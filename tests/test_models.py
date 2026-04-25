@@ -88,6 +88,18 @@ def test_new_product_classmethod():
     assert product.quantity == 7
 
 
+def test_price_setter_rejects_non_number():
+    with pytest.raises(TypeError, match="price must be int or float"):
+        Product(name="P1", description="D1", price="oops", quantity=1)  # type: ignore[arg-type]
+
+
+def test_products_property_formats_float_price():
+    product = Product(name="Tea", description="Black", price=199.5, quantity=5)
+    category = Category(name="Drinks", description="Hot drinks", products=[product])
+
+    assert "199.5" in category.products
+
+
 def test_price_setter_rejects_non_positive(capsys):
     product = Product(name="P1", description="D1", price=100.0, quantity=1)
 
