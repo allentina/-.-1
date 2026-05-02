@@ -1,43 +1,37 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import ClassVar, Iterable
 
 
+@dataclass(slots=True)
 class Product:
-    def __init__(
-        self, name: str, description: str, price: float, quantity: int
-    ) -> None:
-        self.name = name
-        self.description = description
-        self.quantity = quantity
+    name: str
+    description: str
+    price: float
+    quantity: int
 
-        # Use the setter validation for initial value too.
-        self.__price: float = 0.0
-        self.price = price
-
-    @property
-    def price(self) -> float:
-        return self.__price
-
-    @price.setter
-    def price(self, value: float) -> None:
-        if not isinstance(value, (int, float)):
+    def __post_init__(self) -> None:
+        if not isinstance(self.price, (int, float)):
             raise TypeError("price must be int or float")
+        if self.price < 0:
+            raise ValueError("price must be >= 0")
 
-        if value <= 0:
-            print("Цена не должна быть нулевая или отрицательная")
-            return
+        if not isinstance(self.quantity, int):
+            raise TypeError("quantity must be int")
+        if self.quantity < 0:
+            raise ValueError("quantity must be >= 0")
 
-        self.__price = float(value)
+        self.price = float(self.price)
 
-    @classmethod
-    def new_product(cls, product_data: dict) -> "Product":
-        return cls(
-            name=product_data["name"],
-            description=product_data["description"],
-            price=product_data["price"],
-            quantity=product_data["quantity"],
-        )
+    def __str__(self) -> str:
+        price_str = str(int(self.price)) if self.price.is_integer() else str(self.price)
+        return f"{self.name}, {price_str} руб. Остаток: {self.quantity} шт."
+
+    def __add__(self, other: object) -> float:
+        if not isinstance(other, Product):
+            return NotImplemented
+        return (self.price * self.quantity) + (other.price * other.quantity)
 
 
 class Category:
@@ -52,40 +46,35 @@ class Category:
     ) -> None:
         self.name = name
         self.description = description
-        self.__products: list[Product] = []
+        self.__products: list[Product] = list(products) if products is not None else []
 
-        # Class-level counters should update automatically on object creation.
-        # Keep a single global counter across all Category instances (incl. subclasses).
-        Category.category_count += 1
+        for product in self.__products:
+            if not isinstance(product, Product):
+                raise TypeError("products must contain only Product instances")
 
-        if products is not None:
-            # Materialize once (in case an iterator is passed) and validate types.
-            products_list = list(products)
-            for product in products_list:
-                if not isinstance(product, Product):
-                    raise TypeError("product must be a Product instance")
-
-            self.__products.extend(products_list)
-            Category.product_count += len(products_list)
-
-    def add_product(self, product: Product) -> None:
-        if not isinstance(product, Product):
-            raise TypeError("product must be a Product instance")
-
-        self.__products.append(product)
-        # Total products across all categories should be stored on the base class.
-        Category.product_count += 1
+        type(self).category_count += 1
+        type(self).product_count += len(self.__products)
 
     @property
-    def products(self) -> str:
-        lines: list[str] = []
-        for product in self.__products:
-            price = product.price
-            if float(price).is_integer():
-                price_out: int | float = int(price)
-            else:
-                price_out = price
-            lines.append(
-                f"{product.name}, {price_out} руб. Остаток: {product.quantity} шт.\n"
-            )
-        return "".join(lines)
+    def products(self) -> list[Product]:
+        return self.__products
+
+    def __str__(self) -> str:
+        total_quantity = sum(p.quantity for p in self.__products)
+        return f"{self.name}, количество продуктов: {total_quantity} шт."
+
+
+class CategoryProductsIterator:
+    def __init__(self, category: Category) -> None:
+        self._category = category
+        self._index = 0
+
+    def __iter__(self) -> CategoryProductsIterator:
+        return self
+
+    def __next__(self) -> Product:
+        if self._index >= len(self._category.products):
+            raise StopIteration
+        item = self._category.products[self._index]
+        self._index += 1
+        return item
