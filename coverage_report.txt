@@ -1,7 +1,7 @@
 ﻿Name               Stmts   Miss  Cover   Missing
 ------------------------------------------------
-shop\__init__.py       3      0   100%
-shop\loader.py        30      7    77%   16-17, 20, 25, 29, 31, 36
-shop\models.py        49      2    96%   25, 79
+shop\__init__.py       2      0   100%
+shop\loader.py        30      0   100%
+shop\models.py        56     12    79%   16, 18, 21, 23, 69-70, 73, 76-80
 ------------------------------------------------
-TOTAL                 82      9    89%
+TOTAL                 88     12    86%

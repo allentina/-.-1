@@ -60,3 +60,32 @@ def test_product_count():
 def test_products_must_be_product_instances():
     with pytest.raises(TypeError):
         Category(name="Bad", description="Bad", products=["not a product"])
+
+
+def test_product_str_formats_output():
+    p = Product(name="P1", description="D", price=10, quantity=2)
+    assert str(p) == "P1, 10 руб. Остаток: 2 шт."
+
+
+def test_product_str_keeps_decimal_price():
+    p = Product(name="P1", description="D", price=10.5, quantity=2)
+    assert str(p) == "P1, 10.5 руб. Остаток: 2 шт."
+
+
+def test_category_str_uses_total_quantity():
+    p1 = Product(name="P1", description="D", price=10.0, quantity=2)
+    p2 = Product(name="P2", description="D", price=20.0, quantity=5)
+    c = Category(name="C1", description="D1", products=[p1, p2])
+    assert str(c) == "C1, количество продуктов: 7 шт."
+
+
+def test_product_add_returns_total_stock_value():
+    p1 = Product(name="P1", description="D", price=10.0, quantity=2)
+    p2 = Product(name="P2", description="D", price=20.0, quantity=5)
+    assert (p1 + p2) == pytest.approx(120.0)
+
+
+def test_product_add_with_non_product_is_type_error():
+    p1 = Product(name="P1", description="D", price=10.0, quantity=2)
+    with pytest.raises(TypeError):
+        _ = p1 + 1
