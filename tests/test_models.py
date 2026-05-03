@@ -1,6 +1,6 @@
 import pytest
 
-from shop.models import Category, Product
+from shop.models import Category, LawnGrass, Product, Smartphone
 
 
 @pytest.fixture(autouse=True)
@@ -89,3 +89,61 @@ def test_product_add_with_non_product_is_type_error():
     p1 = Product(name="P1", description="D", price=10.0, quantity=2)
     with pytest.raises(TypeError):
         _ = p1 + 1
+
+
+def test_smartphone_init():
+    phone = Smartphone(
+        name="Phone",
+        description="Desc",
+        price=100.0,
+        quantity=2,
+        efficiency=9.5,
+        model="X",
+        memory=256,
+        color="black",
+    )
+    assert phone.efficiency == pytest.approx(9.5)
+    assert phone.model == "X"
+    assert phone.memory == 256
+    assert phone.color == "black"
+
+
+def test_lawngrass_init():
+    grass = LawnGrass(
+        name="Grass",
+        description="Desc",
+        price=10.0,
+        quantity=5,
+        country="RU",
+        germination_period=7,
+        color="green",
+    )
+    assert grass.country == "RU"
+    assert grass.germination_period == 7
+    assert grass.color == "green"
+
+
+def test_product_add_requires_same_type():
+    p = Product(name="P1", description="D", price=10.0, quantity=2)
+    phone = Smartphone(
+        name="Phone",
+        description="Desc",
+        price=100.0,
+        quantity=1,
+        efficiency=9.5,
+        model="X",
+        memory=256,
+        color="black",
+    )
+    with pytest.raises(TypeError):
+        _ = p + phone
+
+
+def test_category_add_product_accepts_only_products():
+    c = Category(name="C1", description="D1", products=[])
+    c.add_product(Product(name="P1", description="D", price=10.0, quantity=1))
+    assert len(c.products) == 1
+    assert Category.product_count == 1
+
+    with pytest.raises(TypeError):
+        c.add_product("not a product")

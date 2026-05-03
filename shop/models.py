@@ -31,7 +31,24 @@ class Product:
     def __add__(self, other: object) -> float:
         if not isinstance(other, Product):
             return NotImplemented
+        if type(self) is not type(other):
+            raise TypeError("Can only add products of the same type")
         return (self.price * self.quantity) + (other.price * other.quantity)
+
+
+@dataclass(slots=True)
+class Smartphone(Product):
+    efficiency: float
+    model: str
+    memory: int
+    color: str
+
+
+@dataclass(slots=True)
+class LawnGrass(Product):
+    country: str
+    germination_period: int
+    color: str
 
 
 class Category:
@@ -58,6 +75,12 @@ class Category:
     @property
     def products(self) -> list[Product]:
         return self.__products
+
+    def add_product(self, product: Product) -> None:
+        if not isinstance(product, Product):
+            raise TypeError("Can only add Product or its subclasses to a category")
+        self.__products.append(product)
+        type(self).product_count += 1
 
     def __str__(self) -> str:
         total_quantity = sum(p.quantity for p in self.__products)
