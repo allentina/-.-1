@@ -1,28 +1,69 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import ClassVar, Iterable
 
 
+class BaseProduct(ABC):
+    """Abstract base class for all products."""
+
+    # Keep this class abstract, while allowing dataclasses to generate repr()
+    # for concrete subclasses.
+    @abstractmethod
+    def __repr__(self) -> str:  # pragma: no cover
+        raise NotImplementedError
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.price, (int, float)):  # type: ignore[attr-defined]
+            raise TypeError("price must be int or float")
+        if self.price < 0:  # type: ignore[attr-defined]
+            raise ValueError("price must be >= 0")
+
+        if not isinstance(self.quantity, int):  # type: ignore[attr-defined]
+            raise TypeError("quantity must be int")
+        if self.quantity < 0:  # type: ignore[attr-defined]
+            raise ValueError("quantity must be >= 0")
+
+        self.price = float(self.price)  # type: ignore[attr-defined]
+
+    def __str__(self) -> str:
+        price = float(self.price)  # type: ignore[attr-defined]
+        price_str = str(int(price)) if price.is_integer() else str(price)
+        return (
+            f"{self.name}, {price_str} руб. Остаток: {self.quantity} шт."
+        )  # type: ignore[attr-defined]
+
+    def __add__(self, other: object) -> float:
+        if not isinstance(other, BaseProduct):
+            return NotImplemented
+        if type(self) is not type(other):
+            raise TypeError("Can only add products of the same type")
+        # type: ignore[attr-defined]
+        self_total = float(self.price) * int(self.quantity)
+        # type: ignore[attr-defined]
+        other_total = float(other.price) * int(other.quantity)
+        return self_total + other_total
+
+
+class InitPrintMixin:
+    """Mixin that prints creation info (via repr) when object is created."""
+
+    def __post_init__(self) -> None:
+        print(repr(self))
+        super().__post_init__()  # type: ignore[misc]
+
+
 @dataclass(slots=True)
-class Product:
+class Product(InitPrintMixin, BaseProduct):
     name: str
     description: str
     price: float
     quantity: int
 
     def __post_init__(self) -> None:
-        if not isinstance(self.price, (int, float)):
-            raise TypeError("price must be int or float")
-        if self.price < 0:
-            raise ValueError("price must be >= 0")
-
-        if not isinstance(self.quantity, int):
-            raise TypeError("quantity must be int")
-        if self.quantity < 0:
-            raise ValueError("quantity must be >= 0")
-
-        self.price = float(self.price)
+        # Run mixin -> base validation chain.
+        super().__post_init__()
 
     def __str__(self) -> str:
         price_str = str(int(self.price)) if self.price.is_integer() else str(self.price)
