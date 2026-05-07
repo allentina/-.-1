@@ -1,6 +1,6 @@
 import pytest
 
-from shop.models import Category, LawnGrass, Product, Smartphone
+from shop.models import BaseProduct, Category, LawnGrass, Product, Smartphone
 
 
 @pytest.fixture(autouse=True)
@@ -147,3 +147,27 @@ def test_category_add_product_accepts_only_products():
 
     with pytest.raises(TypeError):
         c.add_product("not a product")
+
+
+def test_baseproduct_defines_abstract_protocol():
+    assert {"__repr__", "__str__", "__add__"} <= set(BaseProduct.__abstractmethods__)
+
+
+def test_init_print_mixin_prints_creation_info(capsys):
+    _ = Product(name="P1", description="D", price=10.0, quantity=2)
+    out = capsys.readouterr().out.strip()
+    assert out.startswith("Created Product(")
+
+
+def test_repr_from_mixin_is_used_for_subclasses():
+    phone = Smartphone(
+        name="Phone",
+        description="Desc",
+        price=100.0,
+        quantity=1,
+        efficiency=9.5,
+        model="X",
+        memory=256,
+        color="black",
+    )
+    assert repr(phone).startswith("Created Smartphone(")

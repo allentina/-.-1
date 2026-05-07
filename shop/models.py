@@ -8,10 +8,19 @@ from typing import ClassVar, Iterable
 class BaseProduct(ABC):
     """Abstract base class for all products."""
 
-    # Keep this class abstract, while allowing dataclasses to generate repr()
-    # for concrete subclasses.
     @abstractmethod
     def __repr__(self) -> str:  # pragma: no cover
+        """Return a developer-friendly representation of the product."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def __str__(self) -> str:  # pragma: no cover
+        """Return a user-friendly representation of the product."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def __add__(self, other: object) -> float:  # pragma: no cover
+        """Sum stock value with another product of the same type."""
         raise NotImplementedError
 
     def __post_init__(self) -> None:
@@ -25,59 +34,45 @@ class BaseProduct(ABC):
         if self.quantity < 0:  # type: ignore[attr-defined]
             raise ValueError("quantity must be >= 0")
 
+        # Normalize to float so downstream formatting is consistent.
         self.price = float(self.price)  # type: ignore[attr-defined]
-
-    def __str__(self) -> str:
-        price = float(self.price)  # type: ignore[attr-defined]
-        price_str = str(int(price)) if price.is_integer() else str(price)
-        return (
-            f"{self.name}, {price_str} руб. Остаток: {self.quantity} шт."
-        )  # type: ignore[attr-defined]
-
-    def __add__(self, other: object) -> float:
-        if not isinstance(other, BaseProduct):
-            return NotImplemented
-        if type(self) is not type(other):
-            raise TypeError("Can only add products of the same type")
-        # type: ignore[attr-defined]
-        self_total = float(self.price) * int(self.quantity)
-        # type: ignore[attr-defined]
-        other_total = float(other.price) * int(other.quantity)
-        return self_total + other_total
 
 
 class InitPrintMixin:
     """Mixin that prints creation info (via repr) when object is created."""
+
+    def __repr__(self) -> str:
+        cls_name = self.__class__.__name__
+        name = getattr(self, "name", None)
+        price = getattr(self, "price", None)
+        quantity = getattr(self, "quantity", None)
+        return f"Created {cls_name}(name={name!r}, price={price!r}, quantity={quantity!r})"
 
     def __post_init__(self) -> None:
         print(repr(self))
         super().__post_init__()  # type: ignore[misc]
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, repr=False)
 class Product(InitPrintMixin, BaseProduct):
     name: str
     description: str
     price: float
     quantity: int
 
-    def __post_init__(self) -> None:
-        # Run mixin -> base validation chain.
-        super().__post_init__()
-
     def __str__(self) -> str:
         price_str = str(int(self.price)) if self.price.is_integer() else str(self.price)
         return f"{self.name}, {price_str} руб. Остаток: {self.quantity} шт."
 
     def __add__(self, other: object) -> float:
-        if not isinstance(other, Product):
-            return NotImplemented
+        if not isinstance(other, BaseProduct):
+            raise TypeError("Can only add another product")
         if type(self) is not type(other):
             raise TypeError("Can only add products of the same type")
-        return (self.price * self.quantity) + (other.price * other.quantity)
+        return (self.price * self.quantity) + (other.price * other.quantity)  # type: ignore[attr-defined]
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, repr=False)
 class Smartphone(Product):
     efficiency: float
     model: str
@@ -85,7 +80,7 @@ class Smartphone(Product):
     color: str
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, repr=False)
 class LawnGrass(Product):
     country: str
     germination_period: int
