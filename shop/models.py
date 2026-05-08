@@ -41,15 +41,9 @@ class BaseProduct(ABC):
 class InitPrintMixin:
     """Mixin that prints creation info (via repr) when object is created."""
 
-    def __repr__(self) -> str:
-        cls_name = self.__class__.__name__
-        name = getattr(self, "name", None)
-        price = getattr(self, "price", None)
-        quantity = getattr(self, "quantity", None)
-        return f"Created {cls_name}(name={name!r}, price={price!r}, quantity={quantity!r})"
-
     def __post_init__(self) -> None:
-        print(repr(self))
+        # Prefix the instance repr with creation marker.
+        print(f"Created {self!r}")
         super().__post_init__()  # type: ignore[misc]
 
 
@@ -59,6 +53,13 @@ class Product(InitPrintMixin, BaseProduct):
     description: str
     price: float
     quantity: int
+
+    def __repr__(self) -> str:
+        """Return a developer-friendly representation of the product."""
+        cls_name = type(self).__name__
+        fields = getattr(self, "__dataclass_fields__", {})
+        parts = [f"{name}={getattr(self, name)!r}" for name in fields]
+        return f"{cls_name}({', '.join(parts)})"
 
     def __str__(self) -> str:
         price_str = str(int(self.price)) if self.price.is_integer() else str(self.price)

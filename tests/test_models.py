@@ -170,4 +170,4 @@ def test_repr_from_mixin_is_used_for_subclasses():
         memory=256,
         color="black",
     )
-    assert repr(phone).startswith("Created Smartphone(")
+    assert repr(phone).startswith("Smartphone(")
