@@ -1,35 +1,22 @@
 # Intro OOP Homework
 
-Небольшой учебный проект с базовыми доменными моделями:
+Учебный проект "магазин" с базовыми доменными моделями и тестами.
+
+Реализовано:
 
 - `Product` с полями `name`, `description`, `price`, `quantity`.
-- `Category` с полями `name`, `description`, `products`.
-- Счетчики `Category.category_count` и `Category.product_count` обновляются автоматически при создании объектов и добавлении продуктов.
-- JSON-загрузчик `load_categories_from_json()` создает объекты из `products.json`.
-- `Category` хранит продукты в приватном списке и предоставляет `add_product()` и свойство `products` (форматированный вывод).
-- `Product.price` защищен через getter/setter, а `Product.new_product()` создает продукт из `dict`.
+- Классы-наследники `Product`: `Smartphone` и `LawnGrass`.
+- `Category` с полями `name`, `description`, приватным списком товаров и методом `add_product()`.
+- Счетчики `Category.category_count` и `Category.product_count`.
+- Ограничение сложения: складывать можно только товары одного и того же конкретного класса (`type(self) is type(other)`), иначе выбрасывается `TypeError`.
+- JSON-загрузчик `load_categories_from_json()` создает категории и продукты из файла JSON.
 
 ## Зависимости
 
 - Python `>= 3.12`
-- Dev-зависимости: `pytest`, `pytest-cov`, `flake8` (см. `pyproject.toml` или `requirements-dev.txt`)
-
-## Установка (venv + pip, Windows PowerShell)
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\pip install -r requirements-dev.txt
-```
-
-## Установка (Poetry, опционально)
-
-```powershell
-poetry install
-```
+- Для разработки: `pytest`, `pytest-cov`, `flake8` (см. `pyproject.toml` / `requirements-dev.txt`)
 
 ## Тесты и покрытие
-
-Запуск тестов (покрытие генерируется настройками в `pyproject.toml`):
 
 ```powershell
 .\.venv\Scripts\python -m pytest
@@ -37,5 +24,6 @@ poetry install
 
 Артефакты покрытия:
 
-- `coverage.xml` (XML-отчет)
-- `coverage_report.txt` (краткий текстовый отчет)
+- `coverage.xml`
+- `coverage_report.txt`
+

@@ -1,6 +1,13 @@
 import pytest
 
-from shop.models import Category, Product
+from shop.models import BaseProduct, Category, LawnGrass, Product, Smartphone
+
+
+@pytest.fixture(autouse=True)
+def reset_category_counters():
+    Category.category_count = 0
+    Category.product_count = 0
+    yield
 
 
 def test_product_init():
@@ -29,12 +36,7 @@ def test_category_init():
 
     assert category.name == "Drinks"
     assert category.description == "Hot drinks"
-    assert category._Category__products == [p1, p2]
-    assert Category.product_count == 2
-    assert (
-        category.products
-        == "Tea, 199 руб. Остаток: 5 шт.\nCoffee, 399 руб. Остаток: 2 шт.\n"
-    )
+    assert category.products == [p1, p2]
 
 
 def test_category_count():
@@ -60,42 +62,129 @@ def test_products_must_be_product_instances():
         Category(name="Bad", description="Bad", products=["not a product"])
 
 
-def test_add_product_increments_product_count():
-    category = Category(name="C1", description="D1", products=[])
-    product = Product(name="P1", description="D", price=10.0, quantity=1)
-
-    result = category.add_product(product)
-
-    assert result is None
-    assert Category.product_count == 1
-    assert category._Category__products == [product]
+def test_product_str_formats_output():
+    p = Product(name="P1", description="D", price=10, quantity=2)
+    assert str(p) == "P1, 10 руб. Остаток: 2 шт."
 
 
-def test_new_product_classmethod():
-    product = Product.new_product(
-        {
-            "name": "P1",
-            "description": "D1",
-            "price": 99.9,
-            "quantity": 7,
-        }
+def test_product_str_keeps_decimal_price():
+    p = Product(name="P1", description="D", price=10.5, quantity=2)
+    assert str(p) == "P1, 10.5 руб. Остаток: 2 шт."
+
+
+def test_category_str_uses_total_quantity():
+    p1 = Product(name="P1", description="D", price=10.0, quantity=2)
+    p2 = Product(name="P2", description="D", price=20.0, quantity=5)
+    c = Category(name="C1", description="D1", products=[p1, p2])
+    assert str(c) == "C1, количество продуктов: 7 шт."
+
+
+def test_product_add_returns_total_stock_value():
+    p1 = Product(name="P1", description="D", price=10.0, quantity=2)
+    p2 = Product(name="P2", description="D", price=20.0, quantity=5)
+    assert (p1 + p2) == pytest.approx(120.0)
+
+
+def test_product_add_with_non_product_is_type_error():
+    p1 = Product(name="P1", description="D", price=10.0, quantity=2)
+    with pytest.raises(TypeError):
+        _ = p1 + 1
+
+
+def test_product_quantity_zero_raises_value_error():
+    with pytest.raises(ValueError, match="Товар с нулевым количеством не может быть добавлен"):
+        Product(name="P1", description="D", price=10.0, quantity=0)
+
+
+def test_smartphone_init():
+    phone = Smartphone(
+        name="Phone",
+        description="Desc",
+        price=100.0,
+        quantity=2,
+        efficiency=9.5,
+        model="X",
+        memory=256,
+        color="black",
     )
-
-    assert isinstance(product, Product)
-    assert product.name == "P1"
-    assert product.description == "D1"
-    assert product.price == pytest.approx(99.9)
-    assert product.quantity == 7
+    assert phone.efficiency == pytest.approx(9.5)
+    assert phone.model == "X"
+    assert phone.memory == 256
+    assert phone.color == "black"
 
 
-def test_price_setter_rejects_non_positive(capsys):
-    product = Product(name="P1", description="D1", price=100.0, quantity=1)
+def test_lawngrass_init():
+    grass = LawnGrass(
+        name="Grass",
+        description="Desc",
+        price=10.0,
+        quantity=5,
+        country="RU",
+        germination_period=7,
+        color="green",
+    )
+    assert grass.country == "RU"
+    assert grass.germination_period == 7
+    assert grass.color == "green"
 
-    product.price = 0
-    captured = capsys.readouterr()
-    assert "Цена не должна быть нулевая или отрицательная" in captured.out
-    assert product.price == pytest.approx(100.0)
-    product.price = -10
-    captured = capsys.readouterr()
-    assert "Цена не должна быть нулевая или отрицательная" in captured.out
-    assert product.price == pytest.approx(100.0)
+
+def test_product_add_requires_same_type():
+    p = Product(name="P1", description="D", price=10.0, quantity=2)
+    phone = Smartphone(
+        name="Phone",
+        description="Desc",
+        price=100.0,
+        quantity=1,
+        efficiency=9.5,
+        model="X",
+        memory=256,
+        color="black",
+    )
+    with pytest.raises(TypeError):
+        _ = p + phone
+
+
+def test_category_add_product_accepts_only_products():
+    c = Category(name="C1", description="D1", products=[])
+    c.add_product(Product(name="P1", description="D", price=10.0, quantity=1))
+    assert len(c.products) == 1
+    assert Category.product_count == 1
+
+    with pytest.raises(TypeError):
+        c.add_product("not a product")
+
+
+def test_baseproduct_defines_abstract_protocol():
+    assert {"__repr__", "__str__", "__add__"} <= set(BaseProduct.__abstractmethods__)
+
+
+def test_init_print_mixin_prints_creation_info(capsys):
+    _ = Product(name="P1", description="D", price=10.0, quantity=2)
+    out = capsys.readouterr().out.strip()
+    assert out.startswith("Created Product(")
+
+
+def test_repr_from_mixin_is_used_for_subclasses():
+    phone = Smartphone(
+        name="Phone",
+        description="Desc",
+        price=100.0,
+        quantity=1,
+        efficiency=9.5,
+        model="X",
+        memory=256,
+        color="black",
+    )
+    assert repr(phone).startswith("Smartphone(")
+
+
+def test_category_average_price_returns_average_for_non_empty_category():
+    p1 = Product(name="P1", description="D", price=10.0, quantity=1)
+    p2 = Product(name="P2", description="D", price=20.0, quantity=1)
+    c = Category(name="C1", description="D1", products=[p1, p2])
+    assert c.average_price() == pytest.approx(15.0)
+
+
+def test_category_average_price_returns_zero_for_empty_category():
+    c = Category(name="C1", description="D1", products=[])
+    assert c.average_price() == 0
