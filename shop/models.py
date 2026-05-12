@@ -31,6 +31,8 @@ class BaseProduct(ABC):
 
         if not isinstance(self.quantity, int):  # type: ignore[attr-defined]
             raise TypeError("quantity must be int")
+        if self.quantity == 0:  # type: ignore[attr-defined]
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
         if self.quantity < 0:  # type: ignore[attr-defined]
             raise ValueError("quantity must be >= 0")
 
@@ -118,6 +120,13 @@ class Category:
             raise TypeError("Can only add Product or its subclasses to a category")
         self.__products.append(product)
         type(self).product_count += 1
+
+    def average_price(self) -> float:
+        """Return average price of products in category; 0 if category is empty."""
+        try:
+            return sum(p.price for p in self.__products) / len(self.__products)
+        except ZeroDivisionError:
+            return 0.0
 
     def __str__(self) -> str:
         total_quantity = sum(p.quantity for p in self.__products)

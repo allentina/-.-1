@@ -91,6 +91,11 @@ def test_product_add_with_non_product_is_type_error():
         _ = p1 + 1
 
 
+def test_product_quantity_zero_raises_value_error():
+    with pytest.raises(ValueError, match="Товар с нулевым количеством не может быть добавлен"):
+        Product(name="P1", description="D", price=10.0, quantity=0)
+
+
 def test_smartphone_init():
     phone = Smartphone(
         name="Phone",
@@ -171,3 +176,15 @@ def test_repr_from_mixin_is_used_for_subclasses():
         color="black",
     )
     assert repr(phone).startswith("Smartphone(")
+
+
+def test_category_average_price_returns_average_for_non_empty_category():
+    p1 = Product(name="P1", description="D", price=10.0, quantity=1)
+    p2 = Product(name="P2", description="D", price=20.0, quantity=1)
+    c = Category(name="C1", description="D1", products=[p1, p2])
+    assert c.average_price() == pytest.approx(15.0)
+
+
+def test_category_average_price_returns_zero_for_empty_category():
+    c = Category(name="C1", description="D1", products=[])
+    assert c.average_price() == 0
